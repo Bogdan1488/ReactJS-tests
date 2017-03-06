@@ -1,40 +1,50 @@
-import React, { Component } from 'react';
-import './App.css';
+import React from 'react';
+import { connect } from 'react-redux';
+import { Link } from 'react-router';
 
-import {connect} from 'react-redux';
-import {getInvites} from './actions/invites';
+import { getInvites } from './actions/invites';
+import Menu from './components/Menu';
 
 
-class App extends Component {
-    addInvite() {
-        this.props.onAddInvite(this.inviteInput.value);
+
+const App = ({ invites, onAddInvite, onFindInvite, onGetInvites, ownProps }) => {
+    let inviteInput = '',
+        searchInput = '';
+
+    console.log(ownProps);
+
+    const addInvite = () => {
+        onAddInvite(inviteInput.value);
     }
-    findInvite() {
-        this.props.onFindInvite(this.searchInput.value);
+    const findInvite = () => {
+        onFindInvite(searchInput.value);
     }
 
-      render() {
-        return (
+
+    return (
+      <div>
+          <Menu/>
           <div>
-              <div>
-                  <input type="text" ref={(input) => {this.inviteInput = input}} />
-                  <button onClick={this.addInvite.bind(this)}>add</button>
-              </div>
-              <div>
-                  <input type="text" ref={(input) => {this.searchInput = input}} />
-                  <button onClick={this.findInvite.bind(this)}>search</button>
-              </div>
-              <div>
-                  <button onClick={this.props.onGetInvites}>get invites</button>
-              </div>
-              <ul>
-              {this.props.invites.map((invite) => {
-                 return <li key={invite.id}>{invite.text}</li>
-              })}
-            </ul>
+              <input type="text" ref={(input) => {inviteInput = input}} />
+              <button onClick={addInvite}>add</button>
           </div>
-        );
-      }
+          <div>
+              <input type="text" ref={(input) => {searchInput = input}} />
+              <button onClick={findInvite}>search</button>
+          </div>
+          <div>
+              <button onClick={onGetInvites}>get invites</button>
+          </div>
+          <ul>
+          {invites.map((invite) => {
+             return <li key={invite.id}>
+                 <Link to={`/invite/${invite.id}`}>{invite.text}</Link>
+             </li>
+          })}
+        </ul>
+      </div>
+    );
+
 }
 
 
@@ -45,13 +55,14 @@ const invites = (invitesList, searchInput) => {
 }
 
 export default connect(
-    state => ({
-        invites: invites(state.invites, state.filterInvites)
+    (state, ownProps) => ({
+        invites: invites(state.invites, state.filterInvites),
+        ownProps
     }),
     dispatch => ({
         onAddInvite: (invite) => {
             const payload = {
-                id: Date.now().toString(),
+                id: Date.now(),
                 text: invite
             };
             dispatch({type: 'ADD_INVITE', payload});
